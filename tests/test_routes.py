@@ -185,3 +185,20 @@ class TestAccountService(TestCase):
         json.pop("name")  # now invalid!
         response = self.client.put(f"{BASE_URL}/{account.id}", json=json)
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_CONTENT)
+
+    def test_delete_account(self):
+        'It should delete account by id if exists and return 204 NO CONTENT with empty body regardless'
+        account, = self._create_accounts(1)
+        response = self.client.get(f"{BASE_URL}/{account.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.delete(f"{BASE_URL}/{account.id}")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.text, "")
+
+        response = self.client.get(f"{BASE_URL}/{account.id}")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response = self.client.delete(f"{BASE_URL}/{account.id}")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.text, "")
