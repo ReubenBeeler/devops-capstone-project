@@ -89,7 +89,7 @@ def read_account(id):
 def update_account(id):
     """
     Updates an Account
-    This endpoint will retrieve an Account based the id in the URL
+    This endpoint will update an Account based the id in the URL given the content JSON
     """
     app.logger.info("Request to update an Account")
     check_content_type("application/json")
@@ -109,8 +109,18 @@ def update_account(id):
 ######################################################################
 # DELETE AN ACCOUNT
 ######################################################################
-
-# ... place you code here to DELETE an account ...
+@app.route("/accounts/<int:id>", methods=["DELETE"])
+def delete_account(id):
+    """
+    Deletes an Account
+    This endpoint will delete an Account based the id in the URL if exists otherwise does nothing
+    """
+    app.logger.info("Request to read an Account")
+    account = Account.find(id)
+    if account is not None:
+        account.delete()
+    
+    return make_response("", status.HTTP_204_NO_CONTENT)
 
 
 ######################################################################
