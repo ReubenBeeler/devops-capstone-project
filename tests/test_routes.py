@@ -124,3 +124,23 @@ class TestAccountService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     # ADD YOUR TEST CASES HERE ...
+
+    def test_unsuppored_method(self):
+        'It should return 405 for attempting to post to accounts/id'
+        response = self.client.post(f"{BASE_URL}/1337")
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWEDHTT)
+
+    def test_read_account(self):
+        'It should return the existing account with the matching id'
+        account, = self._create_accounts(1)
+        response = self.client.get(f"{BASE_URL}/{account.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        get_account = Account().deserialize(response.get_json())
+        self.assertEqual(get_account.name, account.name)
+        self.assertEqual(get_account.email, account.email)
+        # etc. just override == operator for Account
+
+    def test_read_nonexistent_account(self):
+        'It should return 404 for attempting to read nonexistent account with given id'
+        response = self.client.get(f"{BASE_URL}/1337")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
