@@ -208,11 +208,21 @@ class TestAccountService(TestCase):
     
     def test_security_headers(self):
         'It should return the appropriate security headers'
-        response = self.client.head(f"/", environ_overrides=HTTPS_ENVIRON)
         necessary_headers = {
             'X-Frame-Options': 'SAMEORIGIN',
             'X-Content-Type-Options': 'nosniff',
             'Content-Security-Policy': "default-src 'self'; object-src 'none'",
             'Referrer-Policy': 'strict-origin-when-cross-origin',
         }
+        response = self.client.head(f"/", environ_overrides=HTTPS_ENVIRON)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        assert(necessary_headers.items() <= dict(response.headers).items())
+    
+    def test_allow_origin_headers(self):
+        'It should return the `Access-Control-Allow-Origin: *` header'
+        necessary_headers = {
+            'Access-Control-Allow-Origin': '*',
+        }
+        response = self.client.head(f"/", environ_overrides=HTTPS_ENVIRON)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         assert(necessary_headers.items() <= dict(response.headers).items())
