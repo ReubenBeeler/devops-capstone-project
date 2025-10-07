@@ -163,8 +163,8 @@ class TestAccountService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertIsInstance(data, list)
-        self.assertEqual(len(data), 17)
-    
+        self.assertEqual(len(data), len(accounts))
+
     def test_update_account(self):
         'It should successfully update an existing account given valid json'
         account, = self._create_accounts(1)
@@ -174,13 +174,13 @@ class TestAccountService(TestCase):
         get_account = Account().deserialize(response.get_json())
         self.assertEqual(account.name, get_account.name)
         self.assertEqual(account.email, get_account.email)
-    
+
     def test_update_nonexistent_account(self):
         'It should fail to update a nonexistent account'
         account = AccountFactory()
         response = self.client.put(f"{BASE_URL}/{account.id}", json=account.serialize())
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-    
+
     def test_update_account_invalid_serialization(self):
         'It should fail to update an existing account given invalid serialization'
         account, = self._create_accounts(1)
@@ -205,7 +205,7 @@ class TestAccountService(TestCase):
         response = self.client.delete(f"{BASE_URL}/{account.id}")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(response.text, "")
-    
+
     def test_security_headers(self):
         'It should return the appropriate security headers'
         necessary_headers = {
@@ -214,15 +214,15 @@ class TestAccountService(TestCase):
             'Content-Security-Policy': "default-src 'self'; object-src 'none'",
             'Referrer-Policy': 'strict-origin-when-cross-origin',
         }
-        response = self.client.head(f"/", environ_overrides=HTTPS_ENVIRON)
+        response = self.client.head("/", environ_overrides=HTTPS_ENVIRON)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         assert(necessary_headers.items() <= dict(response.headers).items())
-    
+
     def test_allow_origin_headers(self):
         'It should return the `Access-Control-Allow-Origin: *` header'
         necessary_headers = {
             'Access-Control-Allow-Origin': '*',
         }
-        response = self.client.head(f"/", environ_overrides=HTTPS_ENVIRON)
+        response = self.client.head("/", environ_overrides=HTTPS_ENVIRON)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         assert(necessary_headers.items() <= dict(response.headers).items())
