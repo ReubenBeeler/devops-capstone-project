@@ -128,7 +128,7 @@ class TestAccountService(TestCase):
     def test_unsuppored_method(self):
         'It should return 405 for attempting to post to accounts/id'
         response = self.client.post(f"{BASE_URL}/1337")
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWEDHTT)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_read_account(self):
         'It should return the existing account with the matching id'
@@ -144,3 +144,20 @@ class TestAccountService(TestCase):
         'It should return 404 for attempting to read nonexistent account with given id'
         response = self.client.get(f"{BASE_URL}/1337")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_list_empty_accounts(self):
+        'It should return 0 accounts as an empty list'
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 0)
+
+    def test_list_full_accounts(self):
+        'It should return all 17 accounts as a list'
+        accounts = self._create_accounts(17)
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 17)
