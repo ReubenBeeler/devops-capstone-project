@@ -161,3 +161,27 @@ class TestAccountService(TestCase):
         data = response.get_json()
         self.assertIsInstance(data, list)
         self.assertEqual(len(data), 17)
+    
+    def test_update_account(self):
+        'It should successfully update an existing account given valid json'
+        account, = self._create_accounts(1)
+        account.name = "Borbis Zarg"
+        response = self.client.put(f"{BASE_URL}/{account.id}", json=account.serialize())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        get_account = Account().deserialize(response.get_json())
+        self.assertEqual(account.name, get_account.name)
+        self.assertEqual(account.email, get_account.email)
+    
+    def test_update_nonexistent_account(self):
+        'It should fail to update a nonexistent account'
+        account = AccountFactory()
+        response = self.client.put(f"{BASE_URL}/{account.id}", json=account.serialize())
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    
+    def test_update_account_invalid_serialization(self):
+        'It should fail to update an existing account given invalid serialization'
+        account, = self._create_accounts(1)
+        json = account.serialize()  # valid serialization
+        json.pop("name")  # now invalid!
+        response = self.client.put(f"{BASE_URL}/{account.id}", json=json)
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_CONTENT)

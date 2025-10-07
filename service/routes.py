@@ -50,9 +50,7 @@ def create_accounts():
     account.deserialize(request.get_json())
     account.create()
     message = account.serialize()
-    # Uncomment once get_accounts has been implemented
-    # location_url = url_for("get_accounts", account_id=account.id, _external=True)
-    location_url = "/"  # Remove once get_accounts has been implemented
+    location_url = url_for("read_account", id=account.id, _external=True)
     return make_response(
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
@@ -81,14 +79,31 @@ def read_account(id):
     app.logger.info("Request to read an Account")
     account = Account.find(id)
     if account is None:
-        abort(status.HTTP_404_NOT_FOUND)
-    return account.serialize(), status.HTTP_200_OK
+        abort(status.HTTP_404_NOT_FOUND, f"account with id {id} not found")
+    return make_response(account.serialize(), status.HTTP_200_OK)
 
 ######################################################################
 # UPDATE AN EXISTING ACCOUNT
 ######################################################################
+@app.route("/accounts/<int:id>", methods=["PUT"])
+def update_account(id):
+    """
+    Updates an Account
+    This endpoint will retrieve an Account based the id in the URL
+    """
+    app.logger.info("Request to update an Account")
+    check_content_type("application/json")
+    account = Account.find(id)
+    if account is None:
+        abort(status.HTTP_404_NOT_FOUND, f"account with id {id} not found")
+    try:
+        account.deserialize(request.get_json())
+    except BaseException as e:
+        abort(status.HTTP_422_UNPROCESSABLE_CONTENT, e.args[0] if len(e.args) > 0 else f"malformed Account object serialization")
+    
+    account.update()
 
-# ... place you code here to UPDATE an account ...
+    return make_response(jsonify(account.serialize()), status.HTTP_200_OK)
 
 
 ######################################################################
